@@ -11,7 +11,7 @@ export const SideNavData = [
     {
         title: "Invites",
         icon: <FaEnvelope />,
-        link: '/',
+        link: '/invites',
     },
     {
         title: "Edit Profile",
