@@ -18,7 +18,7 @@
     height: 100vh;
     display: flex;
     justify-content: center;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: -100%;
     transition: 850ms;
@@ -30,7 +30,7 @@
     height: 100vh;
     display: flex;
     justify-content: center;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     transition: 350ms;

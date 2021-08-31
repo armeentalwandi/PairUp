@@ -1,0 +1,48 @@
+.w-75 {
+    z-index: -1;
+    margin-left: 50px;
+}
+
+.approve {
+    background-color: darkgreen !important;
+    margin-right: 40px;
+    size: 15px !important;
+}
+
+.decline {
+    margin-left: 10px;
+    background-color: red !important;
+}
+
+.toggle {
+    margin-left: 50px;
+    margin-top: 30px;
+}
+
+.toggle-item {
+    color: grey;
+    font-size: 30px;
+
+}
+
+.toggle-item-here {
+    color: navy;
+    font-size: 30px;
+
+}
+
+.toggle-item :hover {
+    color: navy;
+}
+
+span {
+    margin-left: 30px;
+}
+
+.text {
+    display: inline-block;
+}
+
+.withdraw {
+    float: right;
+}

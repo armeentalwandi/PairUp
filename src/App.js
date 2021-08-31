@@ -10,8 +10,8 @@ import MapWithADirectionsRenderer from './pages/Homepage/Map';
 //import { Button } from '@material-ui/core';
 import './index.css';
 import Results from './pages/Results';
-
-
+import Invites from './pages/Invites';
+import Sent from './pages/Sent';
 
 function App() {
 
@@ -38,7 +38,8 @@ function App() {
          endlat={endlat} endlong={endlong}/>
            </Route>
           <Route exact path= '/results'> <Results/> </Route>
-          
+          <Route path='/invites' exact component={Invites} />
+          <Route path='/sent' exact component={Sent} /> 
           
           </Switch>
          
