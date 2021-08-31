@@ -1,15 +1,17 @@
 
 import './App.css';
+import SideNav from './components/SideNav/SideNav';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import React from 'react';
+import Home from './pages/Home';
+import {useState} from 'react';
+import GoogleMaps from './pages/Homepage/startingpoint';
+import GoogleMaps1 from './pages/Homepage/destination';
+import MapWithADirectionsRenderer from './pages/Homepage/Map';
 
-import {Link} from 'react-router-dom';
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'; 
-import MapWithADirectionsRenderer from './Map';
-import GoogleMaps from './startingpoint';
-import GoogleMaps1 from './destination';
 
 //import { Button } from '@material-ui/core';
- 
-import { useState } from 'react';
+
 
 
 
@@ -29,18 +31,19 @@ function App() {
     <div className="App">
      
     
-      <p><Link to="/homepage">Get Directions</Link></p> 
+      
       <header className="content">
+        <SideNav></SideNav>
         <Switch>
-         <Route path= "/homepage">
+         <Route path= "/" exact component={Home}>
          <GoogleMaps setStartlat = {setStartlat} setStartlong = {setStartlong}/>
-         <GoogleMaps1 setEndlat = {setEndlat} setEndlong = {setEndlong}/>
+        <GoogleMaps1 setEndlat = {setEndlat} setEndlong = {setEndlong}/>
 
-       {/* <Button startlat = {startlat} startlong = {startlong} 
-          endlat={endlat} endlong={endlong} onClick=}> Find Buddies</Button> */}
+      {/* <Button startlat = {startlat} startlong = {startlong} 
+         endlat={endlat} endlong={endlong} onClick=}> Find Buddies</Button> */}
 
-          <MapWithADirectionsRenderer startlat = {startlat} startlong = {startlong} 
-          endlat={endlat} endlong={endlong}/>
+         <MapWithADirectionsRenderer startlat = {startlat} startlong = {startlong} 
+         endlat={endlat} endlong={endlong}/>
            
           </Route>
           </Switch>
