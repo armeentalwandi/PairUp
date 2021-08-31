@@ -6,7 +6,7 @@ export const SideNavData = [
     {
         title: "Home",
         icon: <FaHome />,
-        link: '/',
+        link: '/',  
     },
     {
         title: "Invites",
@@ -17,6 +17,11 @@ export const SideNavData = [
         title: "Edit Profile",
         icon: <FaUserEdit />,
         link: '/',
+    },
+    {
+        title: "Results",
+        icon: <FaUserEdit />,
+        link: '/results',
     },
     {
         title: "Logout",
