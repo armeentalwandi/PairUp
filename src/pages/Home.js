@@ -8,16 +8,17 @@ function Home() {
     const [startlat, setStartlat] = useState(); 
     const [endlat, setEndlat] = useState(); // 3 more 
     const [startlong, setStartlong] = useState(); 
-    const [endlong, setEndlong] = useState(); 
-
+    const [endlong, setEndlong] = useState();
+    
+    
     return (
         <>
         console.log("hello"); 
         <GoogleMaps setStartlat = {setStartlat} setStartlong = {setStartlong}/>
         <GoogleMaps1 setEndlat = {setEndlat} setEndlong = {setEndlong}/>
 
-      {/* <Button startlat = {startlat} startlong = {startlong} 
-         endlat={endlat} endlong={endlong} onClick=}> Find Buddies</Button> */}
+       <Button startlat = {startlat} startlong = {startlong} 
+         endlat={endlat} endlong={endlong}> Find Buddies</Button>
 
          <MapWithADirectionsRenderer startlat = {startlat} startlong = {startlong} 
          endlat={endlat} endlong={endlong}/>

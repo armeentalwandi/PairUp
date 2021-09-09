@@ -8,11 +8,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
+
+	//"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 const (
@@ -72,8 +74,8 @@ func dbConnection() (*sql.DB, error) {
 }
 
 func createUsersTable(db *sql.DB) error {
-	query := `CREATE TABLE IF NOT EXISTS students(id int primary key auto_increment, name text,
-		email text, safety int, friendly int, dist float)`
+	query := `CREATE TABLE IF NOT EXISTS buddies(id int primary key auto_increment, name text,
+		email text, safety int, friendly int, startlat float, startlong float, endlat float, endlong float)`
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	res, err := db.ExecContext(ctx, query)
@@ -91,45 +93,57 @@ func createUsersTable(db *sql.DB) error {
 }
 
 type User struct {
-	Id       string  `json:"Id"`
-	Name     string  `json:"Name"`
-	Email    string  `json:"Email"`
-	Safety   int     `json:"Safety"`
-	Friendly int     `json:"Friendly"`
-	Dist     float64 `json:"Dist"`
+	Id        string  `json:"Id"`
+	Name      string  `json:"Name"`
+	Email     string  `json:"Email"`
+	Safety    int     `json:"Safety"`
+	Friendly  int     `json:"Friendly"`
+	StartLat  float64 `json:"StartLat"`
+	StartLong float64 `json:"StartLong"`
+	EndLat    float64 `json:"EndLat"`
+	EndLong   float64 `json:"EndLong"`
 }
 
 var Users []User
 
-// func insert(db *sql.DB, w User) error {
-// 	query := "INSERT INTO students(name, email, safety, friendly, dist) VALUES (?, ?, ?, ?, ?)"
-// 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-// 	defer cancelfunc()
-// 	stmt, err := db.PrepareContext(ctx, query)
-// 	if err != nil {
-// 		log.Printf("Error %s when preparing SQL statement", err)
-// 		return err
-// 	}
-// 	defer stmt.Close()
-// 	res, err := stmt.ExecContext(ctx, w.name, w.email, w.safety, w.friendly, w.dist)
-// 	if err != nil {
-// 		log.Printf("Error %s when inserting row into user table", err)
-// 		return err
-// 	}
-// 	rows, err := res.RowsAffected()
-// 	if err != nil {
-// 		log.Printf("Error %s when finding rows affected", err)
-// 		return err
-// 	}
-// 	log.Printf("%d user created ", rows)
-// 	return nil
-// }
+func insert(db *sql.DB, w User) error {
+	query := "INSERT INTO buddies(name, email, safety, friendly, startlat, startlong, endlat, endlong) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)"
+	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelfunc()
+	stmt, err := db.PrepareContext(ctx, query)
+	if err != nil {
+		log.Printf("Error %s when preparing SQL statement", err)
+		return err
+	}
+	defer stmt.Close()
+	res, err := stmt.ExecContext(ctx, w.Name, w.Email, w.Safety, w.Friendly, w.StartLat, w.StartLong, w.EndLat, w.EndLong)
+	if err != nil {
+		log.Printf("Error %s when inserting row into user table", err)
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("Error %s when finding rows affected", err)
+		return err
+	}
+	log.Printf("%d user created ", rows)
+	return nil
+}
 
 func createUser(w http.ResponseWriter, r *http.Request) {
+	db, err := dbConnection()
+	fmt.Print(err)
 	res, _ := ioutil.ReadAll(r.Body)
 	var user User
 	json.Unmarshal(res, &user)
+
 	Users = append(Users, user)
+
+	insForm, err := db.Prepare("INSERT INTO buddies(Id, Name, Email, StartLat , StartLong, EndLat, EndLong, Safety, Friendly) VALUES (?,?,?,?,?,?,?,?,?)")
+	if err != nil {
+		panic(err.Error())
+	}
+	insForm.Exec(user.Id, user.Name, user.Email, user.StartLat, user.StartLong, user.EndLat, user.EndLong, user.Safety, user.Friendly)
 	json.NewEncoder(w).Encode(user)
 }
 
@@ -141,7 +155,10 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &updatedUser)
 	for index, user := range Users {
 		if user.Id == id {
-			user.Dist = updatedUser.Dist
+			user.StartLat = updatedUser.StartLat
+			user.StartLong = updatedUser.StartLong
+			user.EndLat = updatedUser.EndLat
+			user.EndLong = updatedUser.EndLong
 			user.Email = updatedUser.Email
 			user.Friendly = updatedUser.Friendly
 			user.Name = updatedUser.Name
@@ -150,46 +167,85 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(user)
 		}
 	}
+}
+
+func updateLocation(w http.ResponseWriter, r *http.Request) {
+	// id variable problem here, tryna find id in query parameter
+	vars := mux.Vars(r)
+	id := vars["id"]
+	fmt.Println("Id:")
+	fmt.Println(id)
+	var updatedUser User
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	json.Unmarshal(reqBody, &updatedUser)
+	for index, user := range Users {
+		fmt.Println(user)
+		if user.Id == updatedUser.Id {
+			user.StartLat = updatedUser.StartLat
+			user.StartLong = updatedUser.StartLong
+			user.EndLat = updatedUser.EndLat
+			user.EndLong = updatedUser.EndLong
+			Users[index] = user
+			json.NewEncoder(w).Encode(user)
+			fmt.Println("User:")
+			fmt.Println(user)
+		}
+	}
+	fmt.Println("UpdatedUser:")
+	fmt.Println(updatedUser)
 
 }
+
 func getUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Users)
 }
 
-func returnUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	key := vars["id"]
-	dist := vars["Dist"]
-	//loop over all the users
-	//if the user.Id equals the key we pass in
-	//return the user encoded as JSON
+// func returnResult(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	key := vars["id"]
+// 	dist := vars["Dist"]
+// 	//loop over all the users
+// 	//if the user.Id equals the key we pass in
+// 	//return the user encoded as JSON
 
-	for _, user := range Users {
-		i, err := strconv.ParseFloat(dist, 64)
-		fmt.Print(err)
-		if user.Id != key {
-			if user.Dist-i <= 2 {
-				json.NewEncoder(w).Encode(user)
-			}
+// 	for _, user := range Users {
+// 		i, err := strconv.ParseFloat(dist, 64)
+// 		fmt.Print(err)
+// 		if user.Id != key {
+// 			if user.Dist-i <= 2 {
+// 				json.NewEncoder(w).Encode(user)
+// 			}
 
-		}
-	}
-}
+// 		}
+// 	}
+// }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, "homepage vibes")
 	fmt.Println("ENDPOINT: Homepage")
 }
 
+func Cors(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=ascii")
+	w.Header().Set("Secure", "false")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,access-control-allow-origin, access-control-allow-headers")
+}
+
 func handleRequests() {
 	router := mux.NewRouter()
+
 	router.HandleFunc("/", homePage)
 	router.HandleFunc("/users", getUsers)
 
 	router.HandleFunc("/create", createUser).Methods("POST")
+	router.HandleFunc("/location", updateLocation).Methods("PUT")
 	router.HandleFunc("/users/{id}", updateUser).Methods("PUT")
-	router.HandleFunc("/results", returnUser)
-	log.Fatal(http.ListenAndServe(":10000", router))
+	//router.HandleFunc("/results", returnResult)
+
+	handler := cors.AllowAll().Handler(router)
+	log.Fatal(http.ListenAndServe(":10000", handler))
 }
 
 func main() {
@@ -207,8 +263,7 @@ func main() {
 		return
 	}
 
-	Users = []User{
-		User{Name: "Neha", Email: "n123@gmail.com", Safety: 5, Friendly: 5, Dist: 1.5}}
+	Users = []User{}
 
 	handleRequests()
 
